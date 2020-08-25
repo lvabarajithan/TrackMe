@@ -2,7 +2,7 @@
 
 Track your location and generate a summary in Google maps.
 
-<img src="./screenshots/main.png" alt="Main" width="200" height="200">
+<img src="./screenshots/main.png" alt="Main" width="300">
 
 ## Getting Started
 
