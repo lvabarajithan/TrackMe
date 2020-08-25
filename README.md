@@ -16,13 +16,26 @@ What can you learn?
 4. Background service
 5. Foreground notification
 
-## Instructions
+## Setup
 
 - Install Flutter
 - Get Android Studio (or preferred editor)
 - Open the project
 - Connect your device (or start an emulator)
 - Run!
+
+## Instructions
+
+##### Google Maps SDK
+- Generate API key for Google Maps SDK (Android) in Cloud console.
+- Add restrictions to the API key (Optional)
+- Create `keys.xml` under `android/app/src/main/res/values`
+- Put the API key under string resource name `maps_api_key`
+
+##### Release configuration
+- Follow instructions from [here](https://flutter.dev/docs/deployment/android#signing-the-app)
+
+## Installation
 
 ##### Check installation
 ```shell script
