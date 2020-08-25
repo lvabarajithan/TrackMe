@@ -2,6 +2,8 @@
 
 Track your location and generate a summary in Google maps.
 
+<img src="./screenshots/main.png" alt="Main" width="200" height="200">
+
 ## Getting Started
 
 This project is a starting point for learning to develop a Flutter application.
