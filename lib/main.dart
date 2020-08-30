@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'TrackMe',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.lightBlue,
         primaryColor: Colors.lightBlue,
@@ -160,65 +161,73 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 )
             ]),
-            !isTrackingEnabled
-                ? SliderButton(
-                    action: () async {
-                      bool granted = await androidComm.hasProperPermission();
-                      if (granted) {
-                        _invokeAndroidService();
-                      } else {
-                        Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text("Required All time location access"),
-                          action: SnackBarAction(
-                            onPressed: () =>
-                                androidComm.showAppLocationSettings(),
-                            label: "Allow",
-                          ),
-                        ));
-                      }
-                    },
-                    label: Text("Slide to Track"),
-                    icon: Center(
-                      child: Icon(
-                        Icons.map,
-                        color: Colors.lightBlue,
-                      ),
-                    ),
-                    dismissible: false,
-                    vibrationFlag: false,
-                    backgroundColor: Colors.white,
-                    boxShadow:
-                        BoxShadow(color: Colors.lightBlue, blurRadius: 2),
-                  )
-                : Column(
-                    children: [
-                      SliderButton(
-                        action: () {
-                          _startSummaryScreen();
-                        },
-                        label: Text("Slide to Stop"),
-                        icon: Center(
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                          ),
-                        ),
-                        buttonColor: Colors.lightBlue,
-                        shimmer: false,
-                        dismissible: false,
-                        vibrationFlag: false,
-                        backgroundColor: Colors.white,
-                        boxShadow:
-                            BoxShadow(color: Colors.lightBlue, blurRadius: 2),
-                      ),
-                      Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Text("Tracking summary is shown once stopped"))
-                    ],
-                  ),
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 200),
+              child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
+              transitionBuilder: (child, anim) =>
+                  ScaleTransition(child: child, scale: anim),
+            )
           ],
         ),
       ),
+    );
+  }
+
+  Widget _SlideToStop() {
+    return Column(
+      children: [
+        SliderButton(
+          action: () {
+            _startSummaryScreen();
+          },
+          label: Text("Slide to Stop"),
+          icon: Center(
+            child: Icon(
+              Icons.close,
+              color: Colors.white,
+            ),
+          ),
+          buttonColor: Colors.lightBlue,
+          shimmer: false,
+          dismissible: false,
+          vibrationFlag: false,
+          backgroundColor: Colors.white,
+          boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
+        ),
+        Padding(
+            padding: EdgeInsets.all(16),
+            child: Text("Tracking summary is shown once stopped"))
+      ],
+    );
+  }
+
+  Widget _SlideToStart() {
+    return SliderButton(
+      action: () async {
+        bool granted = await androidComm.hasProperPermission();
+        if (granted) {
+          _invokeAndroidService();
+        } else {
+          Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text("Required All time location access"),
+            action: SnackBarAction(
+              onPressed: () => androidComm.showAppLocationSettings(),
+              label: "Allow",
+            ),
+          ));
+        }
+      },
+      label: Text("Slide to Track"),
+      icon: Center(
+        child: Icon(
+          Icons.map,
+          color: Colors.lightBlue,
+        ),
+      ),
+      dismissible: false,
+      vibrationFlag: false,
+      backgroundColor: Colors.white,
+      boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
     );
   }
 

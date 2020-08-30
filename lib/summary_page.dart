@@ -53,8 +53,6 @@ class _SummaryPage extends State<SummaryPage> {
       body: Container(
         child: (data.length != 0)
             ? GoogleMap(
-                cameraTargetBounds: CameraTargetBounds(LatLngBounds(
-                    southwest: data.first, northeast: data.last)),
                 myLocationEnabled: false,
                 zoomControlsEnabled: false,
                 compassEnabled: false,
@@ -62,8 +60,7 @@ class _SummaryPage extends State<SummaryPage> {
                 minMaxZoomPreference: MinMaxZoomPreference(15, 20),
                 initialCameraPosition:
                     CameraPosition(target: data.first, zoom: 18),
-                polylines: _polylines,
-              )
+                polylines: _polylines)
             : Center(
                 child: Text("Invalid tracking data :("),
               ),
