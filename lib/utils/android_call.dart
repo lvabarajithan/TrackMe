@@ -7,4 +7,5 @@ class AndroidCall {
   static const String START_TIME = 'startTime';
   static const String HAS_PROPER_PERMISSION = 'hasAllTimePermission';
   static const String LAUNCH_APP_SETTINGS = "launchAppSettings";
+  static const String GET_TRACKED_POINTS = "getTrackedPoints";
 }

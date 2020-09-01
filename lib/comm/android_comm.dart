@@ -20,6 +20,12 @@ class AndroidComm {
     }
   }
 
+  Future getTrackedPoints() async {
+    if (Platform.isAndroid) {
+      return _methodChannel.invokeMethod(AndroidCall.GET_TRACKED_POINTS);
+    }
+  }
+
   Future getStartTime() async {
     if (Platform.isAndroid) {
       return _methodChannel.invokeMethod(AndroidCall.START_TIME);

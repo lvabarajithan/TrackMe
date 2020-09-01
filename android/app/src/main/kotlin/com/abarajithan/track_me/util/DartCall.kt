@@ -9,4 +9,5 @@ object DartCall {
     const val START_TIME = "startTime"
     const val HAS_PROPER_PERMISSION = "hasAllTimePermission"
     const val LAUNCH_APP_SETTINGS = "launchAppSettings"
+    const val GET_TRACKED_POINTS = "getTrackedPoints"
 }

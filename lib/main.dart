@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -47,6 +48,9 @@ class _MyHomePageState extends State<MyHomePage> {
   AndroidComm androidComm = AndroidComm();
 
   String startTime = "N/a";
+  Timer timer;
+  Set<Polyline> polylines = {};
+  List<LatLng> dataList = [];
 
   @override
   void initState() {
@@ -74,7 +78,30 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         isTrackingEnabled = result;
       });
+      if (result) {
+        initTimer();
+      }
     }
+  }
+
+  void initTimer() {
+    timer = new Timer.periodic(Duration(seconds: 1), (t) async {
+      dataList = await getLatLngData();
+      Set<Polyline> _poly = {};
+      dataList.forEach((latlng) {
+        _poly.add(Polyline(
+          polylineId: PolylineId(latlng.toString()),
+          visible: true,
+          points: dataList,
+          color: Colors.blue,
+          width: 6,
+        ));
+      });
+      setState(() {
+        polylines = _poly;
+        print("Length: ${_poly.length}");
+      });
+    });
   }
 
   @override
@@ -145,21 +172,30 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Column(children: [
-              Text(
-                isTrackingEnabled
-                    ? "Tracking your movements.."
-                    : "Tracking disabled",
-                style: TextStyle(fontSize: 24, color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              if (isTrackingEnabled)
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    "Started at $startTime",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
+              isTrackingEnabled
+                  ? Container(
+                      height: 300,
+                      child: dataList.length == 0
+                          ? Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : GoogleMap(
+                              myLocationEnabled: false,
+                              zoomControlsEnabled: false,
+                              compassEnabled: false,
+                              rotateGesturesEnabled: false,
+                              minMaxZoomPreference:
+                                  MinMaxZoomPreference(15, 20),
+                              initialCameraPosition: CameraPosition(
+                                  target: dataList.first, zoom: 18),
+                              polylines: polylines,
+                            ),
+                    )
+                  : Text(
+                      "Tracking disabled",
+                      style: TextStyle(fontSize: 24, color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
             ]),
             AnimatedSwitcher(
               duration: Duration(milliseconds: 200),
@@ -178,6 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
       children: [
         SliderButton(
           action: () {
+            timer.cancel();
             _startSummaryScreen();
           },
           label: Text("Slide to Stop"),
@@ -195,8 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
           boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
         ),
         Padding(
-            padding: EdgeInsets.all(16),
-            child: Text("Tracking summary is shown once stopped"))
+            padding: EdgeInsets.all(16), child: Text("Started at $startTime"))
       ],
     );
   }
@@ -249,21 +285,27 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _startSummaryScreen() async {
-    String json = await androidComm.stopAndroidService();
+    setState(() {
+      isTrackingEnabled = false;
+    });
+    await androidComm.stopAndroidService();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => SummaryPage(dataList)));
+  }
+
+  Future<List<LatLng>> getLatLngData() async {
+    String json = await androidComm.getTrackedPoints();
     List<dynamic> jsonList = jsonDecode(json);
     List<LatLng> dataList = new List(jsonList.length);
     for (int i = 0; i < jsonList.length; i++) {
       dataList[i] = LatLngWrapper.fromAndroidJson(jsonList[i]);
     }
-    setState(() {
-      isTrackingEnabled = false;
-    });
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => SummaryPage(dataList)));
+    return dataList;
   }
 
   void _invokeAndroidService() async {
     String time = await androidComm.invokeAndroidService();
+    initTimer();
     setState(() {
       isTrackingEnabled = true;
       startTime = time;

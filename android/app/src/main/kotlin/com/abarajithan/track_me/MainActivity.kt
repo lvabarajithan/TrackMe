@@ -96,11 +96,14 @@ class MainActivity : FlutterActivity() {
                             .format(Date(trackingService!!.startTimestamp))
                     result.success(time)
                 }
-                DartCall.STOP_TRACKING -> {
+                DartCall.GET_TRACKED_POINTS -> {
                     val paths = trackingService?.pathList
-                    stopTrackingService()
                     val latLong = paths?.map { listOf(it.latitude, it.longitude) }
                     result.success(Gson().toJson(latLong))
+                }
+                DartCall.STOP_TRACKING -> {
+                    stopTrackingService()
+                    result.success(true)
                 }
                 DartCall.IS_TRACKING_ENABLED -> {
                     result.success(isTracking())
