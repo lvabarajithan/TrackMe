@@ -52,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String startTime = "N/a";
   Timer timer;
   Set<Polyline> polylines = {};
-  List<LatLng> dataList = [];
 
   @override
   void initState() {
@@ -88,19 +87,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void initTimer() {
     timer = new Timer.periodic(Duration(seconds: 1), (t) async {
-      dataList = await getLatLngData();
-      Set<Polyline> _poly = {};
-      dataList.forEach((latlng) {
-        _poly.add(Polyline(
-          polylineId: PolylineId(latlng.toString()),
-          visible: true,
-          points: dataList,
-          color: Colors.blue,
-          width: 6,
-        ));
-      });
+      final dataList = await getLatLngData();
       setState(() {
-        polylines = _poly;
+        polylines = {
+          Polyline(
+            polylineId: PolylineId(1.toString()),
+            visible: true,
+            points: dataList,
+            color: Colors.blue,
+            width: 6,
+          )
+        };
       });
     });
   }
@@ -176,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
               isTrackingEnabled
                   ? Container(
                       height: 300,
-                      child: dataList.length == 0
+                      child: polylines.length == 0
                           ? Center(
                               child: CircularProgressIndicator(),
                             )
@@ -188,7 +185,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               minMaxZoomPreference:
                                   MinMaxZoomPreference(15, 20),
                               initialCameraPosition: CameraPosition(
-                                  target: dataList.first, zoom: 18),
+                                  target: polylines.first.points.last,
+                                  zoom: 18),
                               polylines: polylines,
                             ),
                     )
@@ -305,8 +303,8 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       isTrackingEnabled = false;
     });
-    await androidComm.stopAndroidService();
-    final id = await insertSession(null, dataList);
+    int duration = await androidComm.stopAndroidService();
+    final id = await insertSession(null, duration, polylines.first.points);
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => SummaryPage(id: id)));
   }

@@ -103,7 +103,7 @@ class MainActivity : FlutterActivity() {
                 }
                 DartCall.STOP_TRACKING -> {
                     stopTrackingService()
-                    result.success(true)
+                    result.success(System.currentTimeMillis() - trackingService!!.startTimestamp)
                 }
                 DartCall.IS_TRACKING_ENABLED -> {
                     result.success(isTracking())

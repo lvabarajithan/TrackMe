@@ -72,7 +72,7 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                                     id: session.id, title: session.name))),
                         child: ListTile(
                           title: Text(
-                            session.name,
+                            "${session.name} • ${Duration(milliseconds: session.duration).inMinutes}min",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(

@@ -14,7 +14,7 @@ class AndroidComm {
     }
   }
 
-  Future stopAndroidService() async {
+  Future<int> stopAndroidService() async {
     if (Platform.isAndroid) {
       return _methodChannel.invokeMethod(AndroidCall.STOP_TRACKING);
     }
