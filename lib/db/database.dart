@@ -93,3 +93,9 @@ Future getLocationPoints(int sessionId) async {
   });
   return points;
 }
+
+Future<bool> deleteSession(int id) async {
+  final Database db = await getDatabase();
+  final deletedId = await db.delete("sessions", where: "id=?", whereArgs: [id]);
+  return deletedId == 1;
+}

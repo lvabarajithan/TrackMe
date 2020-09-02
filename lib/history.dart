@@ -74,10 +74,52 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                         child: ListTile(
                           title: Text(session.name),
                           subtitle: Text(date.toLocal().toString()),
+                          trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: Colors.redAccent,
+                              ),
+                              onPressed: () =>
+                                  _deleteSession(index, session.id)),
                         ),
                       ),
                     );
                   }),
     );
+  }
+
+  void _deleteSession(int index, int id) async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Delete"),
+            content: Text("Are you sure to delete this session?"),
+            actions: [
+              FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.black45),
+                  )),
+              FlatButton(
+                  onPressed: () async {
+                    final success = await deleteSession(id);
+                    if (success) {
+                      setState(() {
+                        sessions.removeAt(index);
+                      });
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    "Delete",
+                    style: TextStyle(color: Colors.redAccent),
+                  ))
+            ],
+          );
+        });
   }
 }
