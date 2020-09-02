@@ -47,16 +47,16 @@ void createDatabase(db, version) {
       "longitude REAL)");
 }
 
-Future<String> insertSession(String sessionName, List<LatLng> points) async {
+Future<int> insertSession(String sessionName, List<LatLng> points) async {
   final Database db = await getDatabase();
   return db.transaction((txn) async {
     final List<Map<String, dynamic>> listData =
         await txn.query("sessions", columns: ["id"]);
     final int count = listData.length == 0 ? 1 : listData.last["id"] + 1;
 
-    final name = sessionName ?? "Session $count";
     Session session = Session(
-        timestamp: new DateTime.now().millisecondsSinceEpoch, name: name);
+        timestamp: new DateTime.now().millisecondsSinceEpoch,
+        name: sessionName ?? "Session $count");
     final int id = await txn.insert("sessions", session.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
 
@@ -68,7 +68,7 @@ Future<String> insertSession(String sessionName, List<LatLng> points) async {
       await txn.insert("location_points", point.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     });
-    return name;
+    return id;
   });
 }
 
@@ -80,10 +80,11 @@ Future getSessions() async {
     sessions.add(Session(
         id: item["id"], timestamp: item["timestamp"], name: item["name"]));
   });
+  await db.close();
   return sessions;
 }
 
-Future getLocationPoints(int sessionId) async {
+Future<List<LatLng>> getLocationPoints(int sessionId) async {
   final Database db = await getDatabase();
   final data = await db
       .query("location_points", where: "sessionId = ?", whereArgs: [sessionId]);
@@ -91,11 +92,13 @@ Future getLocationPoints(int sessionId) async {
   data.forEach((item) {
     points.add(LatLng(item["latitude"], item["longitude"]));
   });
+  await db.close();
   return points;
 }
 
 Future<bool> deleteSession(int id) async {
   final Database db = await getDatabase();
   final deletedId = await db.delete("sessions", where: "id=?", whereArgs: [id]);
+  await db.close();
   return deletedId == 1;
 }

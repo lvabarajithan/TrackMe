@@ -200,13 +200,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ]),
             Column(children: [
               AnimatedSwitcher(
-                duration: Duration(milliseconds: 200),
+                duration: Duration(milliseconds: 250),
                 child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
                 transitionBuilder: (child, anim) =>
                     ScaleTransition(child: child, scale: anim),
               ),
               Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.only(top: 24),
                 child: isTrackingEnabled
                     ? Text("Started at $startTime")
                     : RaisedButton(
@@ -306,11 +306,9 @@ class _MyHomePageState extends State<MyHomePage> {
       isTrackingEnabled = false;
     });
     await androidComm.stopAndroidService();
-    final title = await insertSession(null, dataList);
+    final id = await insertSession(null, dataList);
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => SummaryPage(title: title, data: dataList)));
+        context, MaterialPageRoute(builder: (context) => SummaryPage(id: id)));
   }
 
   Future<List<LatLng>> getLatLngData() async {

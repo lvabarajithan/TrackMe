@@ -60,20 +60,25 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                     final date =
                         DateTime.fromMillisecondsSinceEpoch(session.timestamp);
                     return Card(
-                      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      elevation: 2,
                       child: InkWell(
-                        onTap: () async {
-                          List<LatLng> data =
-                              await getLocationPoints(session.id);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => SummaryPage(
-                                      title: session.name, data: data)));
-                        },
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SummaryPage(
+                                    id: session.id, title: session.name))),
                         child: ListTile(
-                          title: Text(session.name),
-                          subtitle: Text(date.toLocal().toString()),
+                          title: Text(
+                            session.name,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            date.toLocal().toString(),
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
                           trailing: IconButton(
                               icon: Icon(
                                 Icons.delete,

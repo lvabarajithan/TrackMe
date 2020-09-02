@@ -1,34 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:track_me/db/database.dart';
 
 class SummaryPage extends StatefulWidget {
-  final List<LatLng> data;
+  final int id;
   final String title;
 
-  SummaryPage({this.title, this.data});
+  SummaryPage({this.id, this.title});
 
   @override
-  _SummaryPage createState() => _SummaryPage(title: title, data: data);
+  _SummaryPage createState() => _SummaryPage(sessionId: id, title: title);
 }
 
 class _SummaryPage extends State<SummaryPage> {
-  final Set<Polyline> _polylines = {};
-  final List<LatLng> data;
-  final String title;
+  Set<Polyline> _polylines = {};
 
-  _SummaryPage({this.title, this.data}) {
+  String title;
+  final int sessionId;
+
+  _SummaryPage({this.sessionId, this.title});
+
+  @override
+  void initState() {
+    super.initState();
     _showInMap();
   }
 
-  void _showInMap() async {
-    data.forEach((latlng) {
-      _polylines.add(Polyline(
-        polylineId: PolylineId(latlng.toString()),
-        visible: true,
-        points: data,
-        color: Colors.blue,
-        width: 6,
-      ));
+  void _showInMap() {
+    getLocationPoints(sessionId).then((value) {
+      setState(() {
+        _polylines = {
+          Polyline(
+            polylineId: PolylineId(1.toString()),
+            visible: true,
+            points: value,
+            color: Colors.blue,
+            width: 6,
+          )
+        };
+      });
     });
   }
 
@@ -53,18 +63,18 @@ class _SummaryPage extends State<SummaryPage> {
         ),
       ),
       body: Container(
-        child: (data.length != 0)
+        child: (_polylines.length != 0)
             ? GoogleMap(
                 myLocationEnabled: false,
                 zoomControlsEnabled: false,
                 compassEnabled: false,
                 rotateGesturesEnabled: false,
                 minMaxZoomPreference: MinMaxZoomPreference(15, 20),
-                initialCameraPosition:
-                    CameraPosition(target: data.first, zoom: 18),
+                initialCameraPosition: CameraPosition(
+                    target: _polylines.first.points.first, zoom: 18),
                 polylines: _polylines)
             : Center(
-                child: Text("Invalid tracking data :("),
+                child: CircularProgressIndicator(),
               ),
       ),
     );
