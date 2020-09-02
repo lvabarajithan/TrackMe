@@ -7,9 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:track_me/comm/android_comm.dart';
+import 'package:track_me/history.dart';
 import 'package:track_me/summary_page.dart';
 import 'package:track_me/utils/lat_lng_wrapper.dart';
 
+import 'db/database.dart';
 import 'utils/android_call.dart';
 
 const String METHOD_CHANNEL = "com.abarajithan.track_me/comm";
@@ -99,7 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
       });
       setState(() {
         polylines = _poly;
-        print("Length: ${_poly.length}");
       });
     });
   }
@@ -197,12 +198,34 @@ class _MyHomePageState extends State<MyHomePage> {
                       textAlign: TextAlign.center,
                     ),
             ]),
-            AnimatedSwitcher(
-              duration: Duration(milliseconds: 200),
-              child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
-              transitionBuilder: (child, anim) =>
-                  ScaleTransition(child: child, scale: anim),
-            )
+            Column(children: [
+              AnimatedSwitcher(
+                duration: Duration(milliseconds: 200),
+                child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
+                transitionBuilder: (child, anim) =>
+                    ScaleTransition(child: child, scale: anim),
+              ),
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: isTrackingEnabled
+                    ? Text("Started at $startTime")
+                    : RaisedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => TrackingHistory()));
+                        },
+                        child: Text(
+                          "Previous sessions",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        color: Colors.lightBlue,
+                        padding: EdgeInsets.all(16)),
+              )
+            ]),
           ],
         ),
       ),
@@ -210,30 +233,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _SlideToStop() {
-    return Column(
-      children: [
-        SliderButton(
-          action: () {
-            timer.cancel();
-            _startSummaryScreen();
-          },
-          label: Text("Slide to Stop"),
-          icon: Center(
-            child: Icon(
-              Icons.close,
-              color: Colors.white,
-            ),
-          ),
-          buttonColor: Colors.lightBlue,
-          shimmer: false,
-          dismissible: false,
-          vibrationFlag: false,
-          backgroundColor: Colors.white,
-          boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
+    return SliderButton(
+      action: () {
+        timer.cancel();
+        _startSummaryScreen();
+      },
+      label: Text("Slide to Stop"),
+      icon: Center(
+        child: Icon(
+          Icons.close,
+          color: Colors.white,
         ),
-        Padding(
-            padding: EdgeInsets.all(16), child: Text("Started at $startTime"))
-      ],
+      ),
+      buttonColor: Colors.lightBlue,
+      shimmer: false,
+      dismissible: false,
+      vibrationFlag: false,
+      backgroundColor: Colors.white,
+      boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
     );
   }
 
@@ -289,8 +306,11 @@ class _MyHomePageState extends State<MyHomePage> {
       isTrackingEnabled = false;
     });
     await androidComm.stopAndroidService();
-    Navigator.push(context,
-        MaterialPageRoute(builder: (context) => SummaryPage(dataList)));
+    final title = await insertSession(null, dataList);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => SummaryPage(title: title, data: dataList)));
   }
 
   Future<List<LatLng>> getLatLngData() async {

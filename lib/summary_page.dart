@@ -3,18 +3,20 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class SummaryPage extends StatefulWidget {
   final List<LatLng> data;
+  final String title;
 
-  SummaryPage(this.data);
+  SummaryPage({this.title, this.data});
 
   @override
-  _SummaryPage createState() => _SummaryPage(data);
+  _SummaryPage createState() => _SummaryPage(title: title, data: data);
 }
 
 class _SummaryPage extends State<SummaryPage> {
   final Set<Polyline> _polylines = {};
   final List<LatLng> data;
+  final String title;
 
-  _SummaryPage(this.data) {
+  _SummaryPage({this.title, this.data}) {
     _showInMap();
   }
 
@@ -37,7 +39,7 @@ class _SummaryPage extends State<SummaryPage> {
         brightness: Brightness.dark,
         centerTitle: true,
         title: Text(
-          "Tracking Summary",
+          title ?? "Tracking Summary",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
         ),
         leading: IconButton(
