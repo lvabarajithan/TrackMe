@@ -93,7 +93,13 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                               icon: Icon(
                                 Icons.edit,
                               ),
-                              onPressed: () {}),
+                              onPressed: () async {
+                                final shouldEdit =
+                                    await _showEditDialog(session);
+                                if (shouldEdit) {
+                                  _editItem(session, index);
+                                }
+                              }),
                         ),
                       ),
                     );
@@ -115,6 +121,49 @@ class _TrackingHistoryState extends State<TrackingHistory> {
         ),
       ),
     );
+  }
+
+  String sessionEditName;
+
+  Future<bool> _showEditDialog(Session session) {
+    return showDialog(
+        context: context,
+        builder: (c) {
+          return AlertDialog(
+            title: Text("Change name"),
+            content: TextField(
+              decoration: InputDecoration(hintText: "Enter name"),
+              onChanged: (text) {
+                setState(() {
+                  sessionEditName = text;
+                });
+              },
+            ),
+            actions: [
+              FlatButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.black45),
+                  )),
+              FlatButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(
+                    "Save",
+                    style: TextStyle(color: Colors.redAccent),
+                  ))
+            ],
+          );
+        });
+  }
+
+  void _editItem(Session session, int index) async {
+    final success = await changeSessionName(session.id, sessionEditName);
+    if (success) {
+      setState(() {
+        sessions[index].name = sessionEditName;
+      });
+    }
   }
 
   Future<bool> _showConfirmDialog(int index, int id) {

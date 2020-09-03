@@ -6,7 +6,7 @@ class Session {
   int id;
   final int timestamp;
   final int duration;
-  final String name;
+  String name;
 
   Session({this.timestamp, this.duration, this.name, this.id});
 
@@ -105,7 +105,15 @@ Future<List<LatLng>> getLocationPoints(int sessionId) async {
 
 Future<bool> deleteSession(int id) async {
   final Database db = await getDatabase();
-  final deletedId = await db.delete("sessions", where: "id=?", whereArgs: [id]);
+  final count = await db.delete("sessions", where: "id=?", whereArgs: [id]);
   await db.close();
-  return deletedId == 1;
+  return count >= 1;
+}
+
+Future<bool> changeSessionName(int id, String name) async {
+  final Database db = await getDatabase();
+  final count = await db.update("sessions", {"name": name},
+      where: "id=?", whereArgs: [id]);
+  await db.close();
+  return count >= 1;
 }
