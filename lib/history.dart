@@ -59,11 +59,21 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                     final session = sessions[index];
                     final date =
                         DateTime.fromMillisecondsSinceEpoch(session.timestamp);
-                    return Card(
-                      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      elevation: 2,
+                    return Dismissible(
+                      confirmDismiss: (d) =>
+                          _showConfirmDialog(index, session.id),
+                      key: Key(session.id.toString()),
+                      onDismissed: (d) async {
+                        final success = await deleteSession(session.id);
+                        if (success) {
+                          setState(() {
+                            sessions.removeAt(index);
+                          });
+                        }
+                      },
+                      background: swipeBackground(Alignment.centerLeft),
+                      secondaryBackground:
+                          swipeBackground(Alignment.centerRight),
                       child: InkWell(
                         onTap: () => Navigator.push(
                             context,
@@ -81,11 +91,9 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                           ),
                           trailing: IconButton(
                               icon: Icon(
-                                Icons.delete,
-                                color: Colors.redAccent,
+                                Icons.edit,
                               ),
-                              onPressed: () =>
-                                  _deleteSession(index, session.id)),
+                              onPressed: () {}),
                         ),
                       ),
                     );
@@ -93,8 +101,24 @@ class _TrackingHistoryState extends State<TrackingHistory> {
     );
   }
 
-  void _deleteSession(int index, int id) async {
-    showDialog(
+  Widget swipeBackground(Alignment alignment) {
+    return Container(
+      color: Colors.redAccent,
+      child: Align(
+        alignment: alignment,
+        child: Padding(
+          padding: EdgeInsets.only(left: 16, right: 16),
+          child: Icon(
+            Icons.delete,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _showConfirmDialog(int index, int id) {
+    return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -103,21 +127,15 @@ class _TrackingHistoryState extends State<TrackingHistory> {
             actions: [
               FlatButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(false);
                   },
                   child: Text(
                     "Cancel",
                     style: TextStyle(color: Colors.black45),
                   )),
               FlatButton(
-                  onPressed: () async {
-                    final success = await deleteSession(id);
-                    if (success) {
-                      setState(() {
-                        sessions.removeAt(index);
-                      });
-                    }
-                    Navigator.of(context).pop();
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
                   },
                   child: Text(
                     "Delete",
