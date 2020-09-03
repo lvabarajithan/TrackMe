@@ -128,11 +128,12 @@ class _TrackingHistoryState extends State<TrackingHistory> {
   Future<bool> _showEditDialog(Session session) {
     return showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (c) {
           return AlertDialog(
             title: Text("Change name"),
             content: TextField(
-              decoration: InputDecoration(hintText: "Enter name"),
+              decoration: InputDecoration(hintText: session.name),
               onChanged: (text) {
                 setState(() {
                   sessionEditName = text;
