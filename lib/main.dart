@@ -285,7 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showAboutDialog() async {
     return showAboutDialog(
       context: context,
-      applicationVersion: "v1.0.0",
+      applicationVersion: "v1.1.0",
       applicationIcon: new Image.asset(
         "assets/logo.png",
         height: 44,
