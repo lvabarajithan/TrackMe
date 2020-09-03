@@ -81,9 +81,26 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                                 builder: (context) => SummaryPage(
                                     id: session.id, title: session.name))),
                         child: ListTile(
-                          title: Text(
-                            "${session.name} • ${Duration(milliseconds: session.duration).inMinutes}min",
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          title: Row(
+                            children: [
+                              Text(
+                                session.name,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              //Text(" • "),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Icon(
+                                Icons.timer,
+                                size: 14,
+                              ),
+                              Text(
+                                "${Duration(milliseconds: session.duration).inMinutes}min",
+                                style: TextStyle(
+                                    fontStyle: FontStyle.italic, fontSize: 15),
+                              )
+                            ],
                           ),
                           subtitle: Text(
                             date.toLocal().toString(),
