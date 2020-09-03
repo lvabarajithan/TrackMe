@@ -59,6 +59,8 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                     final session = sessions[index];
                     final date =
                         DateTime.fromMillisecondsSinceEpoch(session.timestamp);
+                    final durationText =
+                        "${Duration(milliseconds: session.duration).inMinutes}min";
                     return Dismissible(
                       confirmDismiss: (d) =>
                           _showConfirmDialog(index, session.id),
@@ -79,7 +81,8 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => SummaryPage(
-                                    id: session.id, title: session.name))),
+                                    id: session.id,
+                                    title: "${session.name} • $durationText"))),
                         child: ListTile(
                           title: Row(
                             children: [
@@ -87,7 +90,6 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                                 session.name,
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              //Text(" • "),
                               SizedBox(
                                 width: 10,
                               ),
@@ -96,7 +98,7 @@ class _TrackingHistoryState extends State<TrackingHistory> {
                                 size: 14,
                               ),
                               Text(
-                                "${Duration(milliseconds: session.duration).inMinutes}min",
+                                durationText,
                                 style: TextStyle(
                                     fontStyle: FontStyle.italic, fontSize: 15),
                               )
