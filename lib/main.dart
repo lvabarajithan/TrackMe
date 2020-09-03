@@ -292,7 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
         width: 44,
       ),
       children: [
-        Text("No location data is transferred or stored anywhere."),
+        Text("Your location data never leaves the device. App respects privacy."),
         Padding(
             padding: EdgeInsets.only(top: 16), child: Text("Made in India")),
       ],
