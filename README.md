@@ -15,6 +15,8 @@ What can you learn?
 3. Method channel
 4. Background service
 5. Foreground notification
+6. SQLite database
+7. async-await computation 
 
 ## Setup
 
