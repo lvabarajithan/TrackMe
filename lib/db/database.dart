@@ -78,7 +78,8 @@ Future<int> insertSession(
 
 Future getSessions() async {
   final Database db = await getDatabase();
-  final data = await db.query("sessions", orderBy: "timestamp");
+  final data =
+      await db.rawQuery("SELECT * FROM sessions ORDER BY timestamp DESC");
   List<Session> sessions = [];
   data.forEach((item) {
     sessions.add(Session(
