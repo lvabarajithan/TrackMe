@@ -65,6 +65,11 @@ class _SummaryPage extends State<SummaryPage> {
       body: Container(
         child: (_polylines.length != 0)
             ? GoogleMap(
+                onMapCreated: (controller) async {
+                  final style = await DefaultAssetBundle.of(context)
+                      .loadString("assets/mapstyle.json");
+                  controller.setMapStyle(style);
+                },
                 myLocationEnabled: false,
                 zoomControlsEnabled: false,
                 compassEnabled: false,

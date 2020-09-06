@@ -2,16 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:track_me/comm/android_comm.dart';
-import 'package:track_me/history.dart';
 import 'package:track_me/summary_page.dart';
 import 'package:track_me/utils/lat_lng_wrapper.dart';
 
 import 'db/database.dart';
+import 'history.dart';
 import 'utils/android_call.dart';
 
 const String METHOD_CHANNEL = "com.abarajithan.track_me/comm";
@@ -30,6 +32,12 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.lightBlue,
         primaryColorBrightness: Brightness.dark,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        cardTheme: CardTheme(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          margin: EdgeInsets.all(16),
+          elevation: 6,
+        ),
       ),
       home: MyHomePage(),
     );
@@ -52,6 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String startTime = "N/a";
   Timer timer;
   Set<Polyline> polylines = {};
+
+  LatLng currLocation = LatLng(0, 0);
 
   @override
   void initState() {
@@ -104,129 +114,113 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        bottomNavigationBar: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(padding: EdgeInsets.all(8), child: Text("Opensource 🎉️"))
-          ],
-        ),
-        appBar: AppBar(
-          elevation: 0,
-          toolbarHeight: 64,
-          title: Row(
-            children: [
-              Text(
-                "Track",
-                style: TextStyle(
-                    fontSize: 32,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500),
-              ),
-              Text(
-                "Me",
-                style: TextStyle(
-                  fontSize: 32,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                Icons.info,
-                color: Colors.white,
-              ),
-              onPressed: () => _showAboutDialog(),
-            )
-          ],
-        ),
-        body: Builder(
-          builder: (BuildContext context) {
-            return Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                      Colors.lightBlue,
-                      Colors.lightBlueAccent,
-                      Colors.white
-                    ])),
-                child: SafeArea(
-                  child: _getWidget(context),
-                ));
-          },
-        ));
+    return Scaffold(body: Builder(
+      builder: (BuildContext context) {
+        return Container(
+            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                  Colors.lightBlue,
+                  Colors.lightBlueAccent,
+                  Colors.white
+                ])),
+            child: SafeArea(
+              child: _getWidget(context),
+            ));
+      },
+    ));
   }
 
   Widget _getWidget(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(children: [
-              isTrackingEnabled
-                  ? Container(
-                      height: 300,
-                      child: polylines.length == 0
-                          ? Center(
-                              child: CircularProgressIndicator(),
-                            )
-                          : GoogleMap(
-                              myLocationEnabled: false,
-                              zoomControlsEnabled: false,
-                              compassEnabled: false,
-                              rotateGesturesEnabled: false,
-                              minMaxZoomPreference:
-                                  MinMaxZoomPreference(15, 20),
-                              initialCameraPosition: CameraPosition(
-                                  target: polylines.first.points.last,
-                                  zoom: 18),
-                              polylines: polylines,
-                            ),
-                    )
-                  : Text(
-                      "Tracking disabled",
-                      style: TextStyle(fontSize: 24, color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-            ]),
-            Column(children: [
-              AnimatedSwitcher(
-                duration: Duration(milliseconds: 250),
-                child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
-                transitionBuilder: (child, anim) =>
-                    ScaleTransition(child: child, scale: anim),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 24),
-                child: isTrackingEnabled
-                    ? Text("Started at $startTime")
-                    : RaisedButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => TrackingHistory()));
-                        },
-                        child: Text(
-                          "Previous sessions",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                        color: Colors.lightBlue,
-                        padding: EdgeInsets.all(16)),
-              )
-            ]),
-          ],
+    return Stack(
+      children: [
+        GoogleMap(
+          onMapCreated: (controller) async {
+            final style = await DefaultAssetBundle.of(context)
+                .loadString("assets/mapstyle.json");
+            controller.setMapStyle(style);
+            setUserLocation(controller);
+          },
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          compassEnabled: false,
+          rotateGesturesEnabled: false,
+          minMaxZoomPreference: MinMaxZoomPreference(15, 25),
+          initialCameraPosition: CameraPosition(target: currLocation, zoom: 17),
+          polylines: polylines,
         ),
-      ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Card(
+                  child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      child: Text(
+                        "TrackMe",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      )),
+                ),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.info,
+                      ),
+                      onPressed: () => _showAboutDialog(),
+                    ),
+                  ),
+                )
+              ],
+            ),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(children: [
+                  AnimatedSwitcher(
+                    duration: Duration(milliseconds: 250),
+                    child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
+                    transitionBuilder: (child, anim) =>
+                        ScaleTransition(child: child, scale: anim),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 24),
+                    child: isTrackingEnabled
+                        ? Text("Started at $startTime")
+                        : RaisedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => TrackingHistory()),
+                              );
+                            },
+                            child: Text(
+                              "Previous sessions",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            color: Colors.lightBlue,
+                            padding: EdgeInsets.all(16)),
+                  )
+                ]),
+              ),
+            )
+          ],
+        )
+      ],
     );
   }
 
@@ -247,7 +241,7 @@ class _MyHomePageState extends State<MyHomePage> {
       shimmer: false,
       dismissible: false,
       vibrationFlag: false,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade200,
       boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
     );
   }
@@ -277,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       dismissible: false,
       vibrationFlag: false,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade200,
       boxShadow: BoxShadow(color: Colors.lightBlue, blurRadius: 2),
     );
   }
@@ -292,7 +286,8 @@ class _MyHomePageState extends State<MyHomePage> {
         width: 44,
       ),
       children: [
-        Text("Your location data never leaves the device. App respects privacy."),
+        Text(
+            "Your location data never leaves the device. App respects privacy."),
         Padding(
             padding: EdgeInsets.only(top: 16), child: Text("Made in India")),
       ],
@@ -333,5 +328,11 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       startTime = time;
     });
+  }
+
+  void setUserLocation(GoogleMapController controller) async {
+    final data = await new Location().getLocation();
+    currLocation = LatLng(data.latitude, data.longitude);
+    controller.animateCamera(CameraUpdate.newLatLng(currLocation));
   }
 }
