@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:track_me/comm/android_comm.dart';
 import 'package:track_me/summary_page.dart';
@@ -61,12 +62,23 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer timer;
   Set<Polyline> polylines = {};
 
-  LatLng currLocation = LatLng(0, 0);
+  LatLng currLocation;
 
   @override
   void initState() {
     super.initState();
     _isServiceBound();
+    _initCurrLocation();
+  }
+
+  void _initCurrLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey("cached_loc")) {
+      final json = jsonDecode(prefs.getString("cached_loc"));
+      currLocation = LatLngWrapper.fromAndroidJson(json);
+    } else {
+      currLocation = LatLng(0, 0);
+    }
   }
 
   Future _isServiceBound() async {
@@ -137,22 +149,27 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _getWidget(BuildContext context) {
     return Stack(
       children: [
-        GoogleMap(
-          onMapCreated: (controller) async {
-            final style = await DefaultAssetBundle.of(context)
-                .loadString("assets/mapstyle.json");
-            controller.setMapStyle(style);
-            setUserLocation(controller);
-          },
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          compassEnabled: false,
-          rotateGesturesEnabled: false,
-          minMaxZoomPreference: MinMaxZoomPreference(15, 25),
-          initialCameraPosition: CameraPosition(target: currLocation, zoom: 17),
-          polylines: polylines,
-        ),
+        currLocation == null
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : GoogleMap(
+                onMapCreated: (controller) async {
+                  final style = await DefaultAssetBundle.of(context)
+                      .loadString("assets/mapstyle.json");
+                  controller.setMapStyle(style);
+                  setUserLocation(controller);
+                },
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                compassEnabled: false,
+                rotateGesturesEnabled: false,
+                minMaxZoomPreference: MinMaxZoomPreference(15, 25),
+                initialCameraPosition:
+                    CameraPosition(target: currLocation, zoom: 17),
+                polylines: polylines,
+              ),
         Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -334,5 +351,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final data = await new Location().getLocation();
     currLocation = LatLng(data.latitude, data.longitude);
     controller.animateCamera(CameraUpdate.newLatLng(currLocation));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("cached_loc", jsonEncode(currLocation));
   }
 }
