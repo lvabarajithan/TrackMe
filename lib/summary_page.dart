@@ -69,14 +69,6 @@ class _SummaryPage extends State<SummaryPage> {
                   final style = await DefaultAssetBundle.of(context)
                       .loadString("assets/mapstyle.json");
                   controller.setMapStyle(style);
-                  final bytes = await controller.takeSnapshot();
-                  Scaffold.of(context).showBottomSheet(
-                        (context) => Container(
-                      height: 300,
-                      child: Image(image: Image.memory(bytes).image),
-                    ),
-                    elevation: 12,
-                  );
                 },
                 myLocationEnabled: false,
                 zoomControlsEnabled: false,

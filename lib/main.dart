@@ -281,9 +281,12 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       label: Text("Slide to Track"),
       icon: Center(
-        child: Icon(
-          Icons.map,
-          color: Colors.lightBlue,
+        child: RotatedBox(
+          quarterTurns: 1,
+          child: Icon(
+            Icons.navigation,
+            color: Colors.lightBlue,
+          ),
         ),
       ),
       dismissible: false,
@@ -319,6 +322,9 @@ class _MyHomePageState extends State<MyHomePage> {
     final id = await insertSession(null, duration, polylines.first.points);
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => SummaryPage(id: id)));
+    setState(() {
+      polylines = {};
+    });
   }
 
   Future<List<LatLng>> getLatLngData() async {
