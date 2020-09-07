@@ -222,10 +222,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           ? Text("Started at $startTime")
                           : RaisedButton(
                               onPressed: () {
-                                Navigator.push(
+                                /*Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => TrackingHistory()),
+                                );*/
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (c) =>
+                                      Container(child: TrackingHistory()),
                                 );
                               },
                               child: Text(

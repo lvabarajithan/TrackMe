@@ -83,7 +83,7 @@ class _SummaryPage extends State<SummaryPage> {
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: Text(
-                      title,
+                      title ?? "Tracking Summary",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

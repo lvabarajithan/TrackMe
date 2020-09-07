@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:track_me/db/database.dart';
-import 'package:track_me/summary_page.dart';
+
+import 'summary_page.dart';
 
 class TrackingHistory extends StatefulWidget {
   @override
@@ -29,100 +30,105 @@ class _TrackingHistoryState extends State<TrackingHistory> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        brightness: Brightness.dark,
-        centerTitle: true,
-        title: Text(
-          "Previous Sessions",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
+        toolbarHeight: 24,
+        title: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: Container(
+            height: 4,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.grey.shade300,
+            ),
+            width: 72,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
         ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: sessions == null
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : sessions.length == 0
-              ? Center(
-                  child: Text("No tracking sessions"),
-                )
-              : ListView.builder(
-                  itemCount: sessions.length,
-                  itemBuilder: (c, index) {
-                    final session = sessions[index];
-                    final date =
-                        DateTime.fromMillisecondsSinceEpoch(session.timestamp);
-                    final durationText =
-                        "${Duration(milliseconds: session.duration).inMinutes}min";
-                    return Dismissible(
-                      confirmDismiss: (d) =>
-                          _showConfirmDialog(index, session.id),
-                      key: Key(session.id.toString()),
-                      onDismissed: (d) async {
-                        final success = await deleteSession(session.id);
-                        if (success) {
-                          setState(() {
-                            sessions.removeAt(index);
-                          });
-                        }
-                      },
-                      background: swipeBackground(Alignment.centerLeft),
-                      secondaryBackground:
-                          swipeBackground(Alignment.centerRight),
-                      child: InkWell(
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SummaryPage(
-                                    id: session.id,
-                                    title: "${session.name} • $durationText"))),
-                        child: ListTile(
-                          title: Row(
-                            children: [
-                              Text(
-                                session.name,
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Icon(
-                                Icons.timer,
-                                size: 14,
-                              ),
-                              Text(
-                                durationText,
-                                style: TextStyle(
-                                    fontStyle: FontStyle.italic, fontSize: 15),
-                              )
-                            ],
+      body: Container(
+        color: Colors.white,
+        child: (sessions == null)
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : (sessions.length == 0)
+                ? Center(
+                    child: Text("No tracking sessions"),
+                  )
+                : ListView.builder(
+                    itemCount: sessions.length,
+                    itemBuilder: (c, index) {
+                      final session = sessions[index];
+                      final date = DateTime.fromMillisecondsSinceEpoch(
+                          session.timestamp);
+                      final durationText =
+                          "${Duration(milliseconds: session.duration).inMinutes}min";
+                      return Dismissible(
+                        confirmDismiss: (d) =>
+                            _showConfirmDialog(index, session.id),
+                        key: Key(session.id.toString()),
+                        onDismissed: (d) async {
+                          final success = await deleteSession(session.id);
+                          if (success) {
+                            setState(() {
+                              sessions.removeAt(index);
+                            });
+                          }
+                        },
+                        background: swipeBackground(Alignment.centerLeft),
+                        secondaryBackground:
+                            swipeBackground(Alignment.centerRight),
+                        child: InkWell(
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SummaryPage(
+                                      id: session.id,
+                                      title:
+                                          "${session.name} • $durationText"))),
+                          child: ListTile(
+                            title: Row(
+                              children: [
+                                Text(
+                                  session.name,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Icon(
+                                  Icons.timer,
+                                  size: 14,
+                                ),
+                                Text(
+                                  durationText,
+                                  style: TextStyle(
+                                      fontStyle: FontStyle.italic,
+                                      fontSize: 15),
+                                )
+                              ],
+                            ),
+                            subtitle: Text(
+                              date.toLocal().toString(),
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                            trailing: IconButton(
+                                icon: Icon(
+                                  Icons.edit,
+                                ),
+                                onPressed: () async {
+                                  final shouldEdit =
+                                      await _showEditDialog(session);
+                                  if (shouldEdit) {
+                                    _editItem(session, index);
+                                  }
+                                }),
                           ),
-                          subtitle: Text(
-                            date.toLocal().toString(),
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          trailing: IconButton(
-                              icon: Icon(
-                                Icons.edit,
-                              ),
-                              onPressed: () async {
-                                final shouldEdit =
-                                    await _showEditDialog(session);
-                                if (shouldEdit) {
-                                  _editItem(session, index);
-                                }
-                              }),
                         ),
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+      ),
     );
   }
 
