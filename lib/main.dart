@@ -39,6 +39,11 @@ class MyApp extends StatelessWidget {
           margin: EdgeInsets.all(16),
           elevation: 6,
         ),
+        dialogTheme: DialogTheme(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
       ),
       home: MyHomePage(),
     );
