@@ -139,9 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Colors.lightBlueAccent,
                   Colors.white
                 ])),
-            child: SafeArea(
-              child: _getWidget(context),
-            ));
+            child: _getWidget(context));
       },
     ));
   }
@@ -170,72 +168,75 @@ class _MyHomePageState extends State<MyHomePage> {
                     CameraPosition(target: currLocation, zoom: 17),
                 polylines: polylines,
               ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Card(
-                  child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      child: Text(
-                        "TrackMe",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontStyle: FontStyle.italic,
+        SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Card(
+                    child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        child: Text(
+                          "TrackMe",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        )),
+                  ),
+                  Card(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.info,
                         ),
-                      )),
-                ),
-                Card(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.info,
+                        onPressed: () => _showAboutDialog(),
                       ),
-                      onPressed: () => _showAboutDialog(),
                     ),
-                  ),
-                )
-              ],
-            ),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(children: [
-                  AnimatedSwitcher(
-                    duration: Duration(milliseconds: 250),
-                    child: isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
-                    transitionBuilder: (child, anim) =>
-                        ScaleTransition(child: child, scale: anim),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 24),
-                    child: isTrackingEnabled
-                        ? Text("Started at $startTime")
-                        : RaisedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => TrackingHistory()),
-                              );
-                            },
-                            child: Text(
-                              "Previous sessions",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            color: Colors.lightBlue,
-                            padding: EdgeInsets.all(16)),
                   )
-                ]),
+                ],
               ),
-            )
-          ],
+              Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(children: [
+                    AnimatedSwitcher(
+                      duration: Duration(milliseconds: 250),
+                      child:
+                          isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(child: child, scale: anim),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 24),
+                      child: isTrackingEnabled
+                          ? Text("Started at $startTime")
+                          : RaisedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => TrackingHistory()),
+                                );
+                              },
+                              child: Text(
+                                "Previous sessions",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
+                              color: Colors.lightBlue,
+                              padding: EdgeInsets.all(16)),
+                    )
+                  ]),
+                ),
+              )
+            ],
+          ),
         )
       ],
     );

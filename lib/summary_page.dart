@@ -45,42 +45,56 @@ class _SummaryPage extends State<SummaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        brightness: Brightness.dark,
-        centerTitle: true,
-        title: Text(
-          title ?? "Tracking Summary",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
+      body: Stack(
+        children: [
+          Container(
+            child: (_polylines.length != 0)
+                ? GoogleMap(
+                    onMapCreated: (controller) async {
+                      final style = await DefaultAssetBundle.of(context)
+                          .loadString("assets/mapstyle.json");
+                      controller.setMapStyle(style);
+                    },
+                    myLocationEnabled: false,
+                    zoomControlsEnabled: false,
+                    compassEnabled: false,
+                    rotateGesturesEnabled: false,
+                    minMaxZoomPreference: MinMaxZoomPreference(15, 20),
+                    initialCameraPosition: CameraPosition(
+                        target: _polylines.first.points.first, zoom: 18),
+                    polylines: _polylines)
+                : Center(
+                    child: CircularProgressIndicator(),
+                  ),
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Container(
-        child: (_polylines.length != 0)
-            ? GoogleMap(
-                onMapCreated: (controller) async {
-                  final style = await DefaultAssetBundle.of(context)
-                      .loadString("assets/mapstyle.json");
-                  controller.setMapStyle(style);
-                },
-                myLocationEnabled: false,
-                zoomControlsEnabled: false,
-                compassEnabled: false,
-                rotateGesturesEnabled: false,
-                minMaxZoomPreference: MinMaxZoomPreference(15, 20),
-                initialCameraPosition: CameraPosition(
-                    target: _polylines.first.points.first, zoom: 18),
-                polylines: _polylines)
-            : Center(
-                child: CircularProgressIndicator(),
-              ),
+          SafeArea(
+            child: Row(
+              children: [
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: InkWell(
+                      child: Icon(Icons.arrow_back_ios),
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
