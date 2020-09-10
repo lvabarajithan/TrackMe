@@ -17,6 +17,8 @@ What can you learn?
 5. Foreground notification
 6. SQLite database
 7. async-await computation 
+8. Location services
+9. Google maps integration
 
 ## Setup
 
