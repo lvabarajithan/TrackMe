@@ -1,6 +1,6 @@
 name: track_me
-description: Track your location summary
-version: 1.1.0+2
+description: Track your location and get a summary
+version: 1.2.0+3
 
 publish_to: 'none'
 environment:
