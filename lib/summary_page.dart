@@ -13,7 +13,10 @@ class SummaryPage extends StatefulWidget {
 }
 
 class _SummaryPage extends State<SummaryPage> {
+  GoogleMapController _controller;
+
   Set<Polyline> _polylines = {};
+  Set<Marker> _markers = {};
 
   String title;
   final int sessionId;
@@ -38,6 +41,20 @@ class _SummaryPage extends State<SummaryPage> {
             width: 6,
           )
         };
+        _markers = {
+          Marker(
+            markerId: MarkerId("start"),
+            position: value.first,
+            infoWindow: InfoWindow(title: "You started here"),
+            consumeTapEvents: false,
+            flat: true,
+          ),
+          Marker(
+            markerId: MarkerId("end"),
+            position: value.last,
+            infoWindow: InfoWindow(title: "Destination"),
+          ),
+        };
       });
     });
   }
@@ -51,6 +68,7 @@ class _SummaryPage extends State<SummaryPage> {
             child: (_polylines.length != 0)
                 ? GoogleMap(
                     onMapCreated: (controller) async {
+                      _controller = controller;
                       final style = await DefaultAssetBundle.of(context)
                           .loadString("assets/mapstyle.json");
                       controller.setMapStyle(style);
@@ -62,7 +80,9 @@ class _SummaryPage extends State<SummaryPage> {
                     minMaxZoomPreference: MinMaxZoomPreference(15, 20),
                     initialCameraPosition: CameraPosition(
                         target: _polylines.first.points.first, zoom: 18),
-                    polylines: _polylines)
+                    polylines: _polylines,
+                    markers: _markers,
+                  )
                 : Center(
                     child: CircularProgressIndicator(),
                   ),
@@ -97,5 +117,13 @@ class _SummaryPage extends State<SummaryPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    if (_controller != null) {
+      _controller.dispose();
+    }
+    super.dispose();
   }
 }

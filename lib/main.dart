@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
         cardTheme: CardTheme(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           margin: EdgeInsets.all(16),
           elevation: 6,
         ),
@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Set<Polyline> polylines = {};
 
   LatLng currLocation;
+  GoogleMapController _controller;
 
   @override
   void initState() {
@@ -102,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _isTrackingEnabled() async {
     if (Platform.isAndroid) {
       bool result =
-          await methodChannel.invokeMethod(AndroidCall.IS_TRACKING_ENABLED);
+      await methodChannel.invokeMethod(AndroidCall.IS_TRACKING_ENABLED);
       setState(() {
         isTrackingEnabled = result;
       });
@@ -134,16 +135,19 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(body: Builder(
       builder: (BuildContext context) {
         return Container(
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             decoration: BoxDecoration(
                 gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                  Colors.lightBlue,
-                  Colors.lightBlueAccent,
-                  Colors.white
-                ])),
+                      Colors.lightBlue,
+                      Colors.lightBlueAccent,
+                      Colors.white
+                    ])),
             child: _getWidget(context));
       },
     ));
@@ -154,25 +158,26 @@ class _MyHomePageState extends State<MyHomePage> {
       children: [
         currLocation == null
             ? Center(
-                child: CircularProgressIndicator(),
-              )
+          child: CircularProgressIndicator(),
+        )
             : GoogleMap(
-                onMapCreated: (controller) async {
-                  final style = await DefaultAssetBundle.of(context)
-                      .loadString("assets/mapstyle.json");
-                  controller.setMapStyle(style);
-                  setUserLocation(controller);
-                },
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
-                compassEnabled: false,
-                rotateGesturesEnabled: false,
-                minMaxZoomPreference: MinMaxZoomPreference(15, 25),
-                initialCameraPosition:
-                    CameraPosition(target: currLocation, zoom: 17),
-                polylines: polylines,
-              ),
+          onMapCreated: (controller) async {
+            _controller = controller;
+            final style = await DefaultAssetBundle.of(context)
+                .loadString("assets/mapstyle.json");
+            controller.setMapStyle(style);
+            setUserLocation(controller);
+          },
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          compassEnabled: false,
+          rotateGesturesEnabled: false,
+          minMaxZoomPreference: MinMaxZoomPreference(15, 25),
+          initialCameraPosition:
+          CameraPosition(target: currLocation, zoom: 17),
+          polylines: polylines,
+        ),
         SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -183,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Card(
                     child: Padding(
                         padding:
-                            EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                         child: Text(
                           "TrackMe",
                           style: TextStyle(
@@ -212,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     AnimatedSwitcher(
                       duration: Duration(milliseconds: 250),
                       child:
-                          isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
+                      isTrackingEnabled ? _SlideToStop() : _SlideToStart(),
                       transitionBuilder: (child, anim) =>
                           ScaleTransition(child: child, scale: anim),
                     ),
@@ -221,26 +226,26 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: isTrackingEnabled
                           ? Text("Started at $startTime")
                           : RaisedButton(
-                              onPressed: () {
-                                /*Navigator.push(
+                          onPressed: () {
+                            /*Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => TrackingHistory()),
                                 );*/
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (c) =>
-                                      Container(child: TrackingHistory()),
-                                );
-                              },
-                              child: Text(
-                                "Previous sessions",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16)),
-                              color: Colors.lightBlue,
-                              padding: EdgeInsets.all(16)),
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (c) =>
+                                  Container(child: TrackingHistory()),
+                            );
+                          },
+                          child: Text(
+                            "Previous sessions",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          color: Colors.lightBlue,
+                          padding: EdgeInsets.all(16)),
                     )
                   ]),
                 ),
@@ -310,7 +315,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showAboutDialog() async {
     return showAboutDialog(
       context: context,
-      applicationVersion: "v1.1.0",
+      applicationVersion: "v1.2.0",
       applicationIcon: new Image.asset(
         "assets/logo.png",
         height: 44,
@@ -370,5 +375,13 @@ class _MyHomePageState extends State<MyHomePage> {
     controller.animateCamera(CameraUpdate.newLatLng(currLocation));
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("cached_loc", jsonEncode(currLocation));
+  }
+
+  @override
+  void dispose() {
+    if (_controller != null) {
+      _controller.dispose();
+    }
+    super.dispose();
   }
 }
