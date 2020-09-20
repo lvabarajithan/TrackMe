@@ -2,6 +2,8 @@
 
 Track your location and generate a summary in Google maps.
 
+<a href='https://play.google.com/store/apps/details?id=com.abarajithan.track_me&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width='200'/></a>
+
 <img src="./screenshots/main.png" alt="Main" width="300">
 
 ## Getting Started
